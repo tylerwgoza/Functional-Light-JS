@@ -320,7 +320,9 @@ Think about a specialized data structure that's like an array, but that you want
 
 Internally, it might be like a linked-list tree of object references where each node in the tree represents a mutation of the original value. Actually, this is conceptually similar to how **git** version control works.
 
-// TODO: image visualization of the tree
+<p align="center">
+	<img src="fig18.png" width="490">
+</p>
 
 Imagine using this hypothetical specialized array data structure like this:
 
@@ -337,7 +339,7 @@ state.get( 42 );					// undefined
 newState.get( 2 );					// 3
 newState.get( 42 );					// "meaning of life"
 
-newState.slice( 1, 3 );				// [2,3,4]
+newState.slice( 1, 3 );				// [2,3]
 ```
 
 The `specialArray(..)` data structure would internally keep track of each mutation operation (like `set(..)`) as a *diff*, so it won't have to reallocate memory for the original values (`1`, `2`, `3`, and `4`) just to add the `"meaning of life"` value to the list. But importantly, `state` and `newState` point at different versions of the array value, so **the value immutability semantic is preserved.**
@@ -359,7 +361,7 @@ state.get( 42 );					// undefined
 newState.get( 2 );					// 3
 newState.get( 42 );					// "meaning of life"
 
-newState.toArray().slice( 1, 3 );	// [2,3,4]
+newState.toArray().slice( 1, 3 );	// [2,3]
 ```
 
 A powerful library like Immutable.js employs very sophisticated performance optimizations. Handling all the details and corner-cases manually without such a library would be quite difficult.

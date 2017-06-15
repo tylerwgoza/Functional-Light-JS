@@ -7,7 +7,7 @@
 >
 > https://twitter.com/jamesiry/status/598547781515485184
 
-Functional Programming (FP) is not a new concept by any means. It's been around almost as long as any programming has been around. I don't know if it's fair to say, but it sure hasn't seemed like as mainstream of a concept in the overall developer world until perhaps the last few years. I think FP has more been the realm of academics.
+Functional Programming (FP) is not a new concept by any means. It's been around almost the entire history of programming. However -- and I'm not sure it's fair to say, but! -- it sure hasn't seemed like as mainstream of a concept in the overall developer world until perhaps the last few years. I think FP has more been the realm of academics.
 
 But that's all changing. A groundswell of interest is growing around FP, not just at the languages level but even in libraries and frameworks. You very well might be reading this text because you've finally realized FP is something you can't ignore any longer. Or maybe you're like me and you've tried to learn FP many times before but struggled to wade through all the terms or mathematical notation.
 
@@ -25,9 +25,9 @@ It is my hope that you will begin to develop more confidence in the code you wri
 
 ## Communication
 
-Why is functional programming important? To answer that, we need to take a bigger step back and talk about why programming is important?
+Why is functional programming important? To answer that, we need to take a bigger step back and talk about why programming itself is important.
 
-It may surprise you to hear this, but I don't believe that code primarily exists to instruct the computer. As a matter of fact, I think the fact that code does instruct the computer is almost a happy accident.
+It may surprise you to hear this, but I don't believe that code is primarily a set of instructions for the computer. As a matter of fact, I think the fact that code instructs the computer is almost a happy accident.
 
 I believe very deeply that the vastly more important role of code is as a means of communication with other human beings.
 
@@ -42,6 +42,32 @@ So, if we are going to spend more time concerned with making code that will be m
 If we use FP principles, I believe we will create code that is easier to reason about. Once we know these principles, they will be recognizable and familiar in the code, meaning we'll spend less time figuring that part out when we read a piece of code. Our focus will be spent on how all the well-known, established lego pieces are assembled, not on what those lego pieces mean.
 
 FP (at least, without all the terminology weighing it down) is one of the most effective tools for writing readable code. *That* is why it's so important.
+
+### Readability Curve
+
+It's really important I take a moment to call out a phenomena that has derailed and frustrated me many times over the years, and was especially acute while writing this book.
+
+I also think it's probably something that many developers have a tendency to run into. You, dear reader, may just find yourself in this same boat as you work through this text. But take heart; if you stick this out, the curve comes back.
+
+<p align="center">
+	<img src="fig17.png" width="600">
+</p>
+
+We'll cover this more in the next chapter, but imperative code is the code you probably already write, like `if` statements and `for`-loops. It's focused on precisely instructing the computer *how* to do something. Declarative code, and moreover the kind of code we'll be striving to learn to write that adheres to FP principles, is code that's more focused on describing the *what* outcome.
+
+Let me just clue you into a painful fact, one that I've been trying to swallow the whole time I've worked on this book: it takes a lot more effort, and often a lot more code, to improve the readability of your code and to minimize or eliminate most of the places where you might write bugs.
+
+If you're hoping that your FP code refactoring will immediately make your code more graceful, elegant, clever, and concise, that's just not a realistic expectation -- at least not at first.
+
+FP is a very different way of thinking about how code should be structured, to make the flow of data much more obvious and to help your reader follow your thinking. This effort is eminently worthwhile, but it can be an arduous journey and the code you end up with will not seem more readable until you've spent a lot more time conditioning yourself to FP.
+
+Also, my experience has been that it takes about a half dozen attempts at turning a snippet of imperative code into more declarative FP, before I end up with something that's clear enough for me to understand. For me, writing FP is more like a process than a binary flip from one paradigm to another.
+
+I also apply the "read it later" test to every piece of FP code I write. I write it, then leave the code alone for a few hours or a day, then come back and try to read it with fresh eyes. Usually, it's confusing as hell, so I tweak it and repeat.
+
+Functional programming has not been for me achieving a single elegant brush stroke on the artist's canvas that leaves the audience in awe. Rather, it's a painstaking, detailed, sometimes treacherous hack through the weeds of a neglected field.
+
+But I'm not trying to dampen your spirits. I really want you to hack through those weeds. I am glad I have. I can finally start to see the curve bending upward towards more readability. The effort has been worth it. I believe it will be for you, too.
 
 ## Take
 
@@ -89,7 +115,7 @@ I have drawn on a great many different resources to be able to compose this text
 
 Some FP/JavaScript books that you should definitely read:
 
-* [Professor Frisbee's Mostly Adequate Guide to Functional Programming](https://drboolean.gitbooks.io/mostly-adequate-guide/content/ch1.html) by [Brian Lonsdorf](https://twitter.com/drboolean)
+* [Professor Frisby's Mostly Adequate Guide to Functional Programming](https://drboolean.gitbooks.io/mostly-adequate-guide/content/ch1.html) by [Brian Lonsdorf](https://twitter.com/drboolean)
 * [JavaScript Allongé](https://leanpub.com/javascript-allonge) by [Reg Braithwaite](https://twitter.com/raganwald)
 * [Functional JavaScript](http://shop.oreilly.com/product/0636920028857.do) by [Michael Fogus](https://twitter.com/fogus)
 
@@ -105,6 +131,7 @@ Some other authors and content you should check out:
 * [James Longster](https://github.com/jlongster)
 * [André Staltz](http://staltz.com/)
 * [Functional Programming Jargon](https://github.com/hemanth/functional-programming-jargon#functional-programming-jargon)
+* [Functional Programming Exercises](https://github.com/InceptionCode/Functional-Programming-Exercises)
 
 ### Libraries
 

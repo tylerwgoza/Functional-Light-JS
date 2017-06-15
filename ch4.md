@@ -23,7 +23,7 @@ To take a step back and visualize the conceptual flow of data, consider:
 functionValue <-- unary <-- adder <-- 3
 ```
 
-`3` is the input to `adder(..)`. The output of `adder(..)` is the input to `unary(..)`. The output of `unary(..)` is `functionValue`. This is called the composition of `unary(..)` and `adder(..)`.
+`3` is the input to `adder(..)`. The output of `adder(..)` is the input to `unary(..)`. The output of `unary(..)` is `functionValue`. This is the composition of `unary(..)` and `adder(..)`.
 
 Think of this flow of data like a conveyor belt in a candy factory, where each operation is a step in the process of cooling, cutting, and wrapping a piece of candy. We'll use the candy factory metaphor throughout this chapter to explain what composition is.
 
@@ -91,7 +91,7 @@ The code equivalent of this improved candy factory configuration is to skip the 
 var wordsUsed = unique( words( text ) );
 ```
 
-**Note:** Though we typically read the function calls left-to-right -- `unique(..)` and then `words(..)` -- the order of operations will actually be more right-to-left, or inner-to-outer. `words(..)` will run first and then `unique(..)`. Later we'll talk about a pattern that matches the order of execution to our natural left-to-right reading.
+**Note:** Though we typically read the function calls left-to-right -- `unique(..)` and then `words(..)` -- the order of operations will actually be more right-to-left, or inner-to-outer. `words(..)` will run first and then `unique(..)`. Later we'll talk about a pattern that matches the order of execution to our natural left-to-right reading, called `pipe(..)`.
 
 The stacked machines are working fine, but it's kind of clunky to have the wires hanging out all over the place. The more of these machine-stacks they create, the more cluttered the factory floor gets. And the effort to assemble and maintain all these machine stacks is awfully time intensive.
 
@@ -123,7 +123,7 @@ The candy factory is humming along nicely, and thanks to all the saved space, th
 
 But the factory engineers struggle to keep up, because each time a new kind of fancy compound machine needs to be made, they spend quite a bit of time making the new outer box and fitting the individual machines into it.
 
-So the factory engineers contact an industrial machine vendor for help. They're amazed to find out that this vendor offers a machine-making machine! As incredible as it sounds, they get a machine that can take a couple of the factory's smaller machines -- the chocolate cooling one and the cutting one, for example -- and wire them together automatically, even wrapping the nice clean bigger box around them. This is surely going to make the candy factory really take off!
+So the factory engineers contact an industrial machine vendor for help. They're amazed to find out that this vendor offers a **machine-making** machine! As incredible as it sounds, they purchase a machine that can take a couple of the factory's smaller machines -- the chocolate cooling one and the cutting one, for example -- and wire them together automatically, even wrapping a nice clean bigger box around them. This is surely going to make the candy factory really take off!
 
 <p align="center">
 	<img src="fig5.png" width="300">
@@ -151,7 +151,7 @@ That may seem like a strange choice, but there are some reasons for it. Most typ
 
 But why? I think the easiest explanation (but perhaps not the most historically accurate) is that we're listing them to match the order they are written if done manually, or rather the order we encounter them when reading from left-to-right.
 
-`unique(words(str))` lists the functions in the left-to-right order `unique,words`, so we make our `compose2(..)` utility accept them in that order, too. Now, the more efficient definition of the candy making machine is:
+`unique(words(str))` lists the functions in the left-to-right order `unique, words`, so we make our `compose2(..)` utility accept them in that order, too. Now, the more efficient definition of the candy making machine is:
 
 ```js
 var uniqueWords = compose2( unique, words );
@@ -171,7 +171,7 @@ chars;
 
 This works because the `words(..)` utility, for value-type safety sake, first coerces its input to a string using `String(..)`. So the array that `unique(..)` returns -- now the input to `words(..)` -- becomes the string `"H,o,w, ,a,r,e,y,u,n,?"`, and then the rest of the behavior in `words(..)` processes that string into the `chars` array.
 
-Admittedly, this is a slightly contrived example. But the point is that function compositions are not always unidirectional. Sometimes we put the gray brick on top of the blue brick, and sometimes we put the blue brick on top.
+Admittedly, this is a contrived example. But the point is that function compositions are not always unidirectional. Sometimes we put the gray brick on top of the blue brick, and sometimes we put the blue brick on top.
 
 The candy factory better be careful if they try to feed the wrapped candies into the machine that mixes and cools the chocolate!
 
@@ -187,7 +187,7 @@ finalValue <-- func1 <-- func2 <-- ... <-- funcN <-- origValue
 	<img src="fig6.png" width="300">
 </p>
 
-Now the candy factory owns the best machine of all: a machine that can take any number of separate smaller machines and spit out a big fancy machine that does every step in order. That's one heck of a candy operation. It's Willy Wonka's dream!
+Now the candy factory owns the best machine of all: a machine that can take any number of separate smaller machines and spit out a big fancy machine that does every step in order. That's one heck of a candy operation! It's Willy Wonka's dream!
 
 We can implement a general `compose(..)` utility like this:
 
@@ -260,7 +260,7 @@ Now, let's recall `partialRight(..)` from Chapter 3 to do something more interes
 Then, we can complete the composition multiple times by calling `filterWords(..)`, but with different first-arguments respectively:
 
 ```js
-// uses a `<= 4` check instead of the `> 4` check
+// Note: uses a `<= 4` check instead of the `> 4` check
 // that `skipShortWords(..)` uses
 function skipLongWords(list) { /* .. */ }
 
@@ -316,7 +316,7 @@ var compose = (...fns) =>
 
 Notice that the `reduce(..)` looping happens each time the final `composed(..)` function is run, and that each intermediate `result(..)` is passed along to the next iteration as the input to the next call.
 
-The advantage of this implementation is that the code is more concise and also that it uses a well-known FP construct: `reduce(..)`. And the performace of this implementation is also similar to the original `for`-loop version.
+The advantage of this implementation is that the code is more concise and also that it uses a well-known FP construct: `reduce(..)`. And the performance of this implementation is also similar to the original `for`-loop version.
 
 However, this implementation is limited in that the outer composed function (aka, the first function in the composition) can only receive a single argument. Most other implementations pass along all arguments to that first call. If every function in the composition is unary, this is no big deal. But if you need to pass multiple arguments to that first call, you'd want a different implementation.
 
@@ -356,7 +356,7 @@ We could also define `compose(..)` using recursion. The recursive definition for
 compose( compose(fn1,fn2, .. fnN-1), fnN );
 ```
 
-**Note:** We will cover recursion in deep detail in a later chapter, so if this approach seems confusing, feel free to skip it for now and come back later after having read that chapter.
+**Note:** We will cover recursion in deep detail in Chapter 9, so if this approach seems confusing, feel free to skip it for now and come back later after reading that chapter.
 
 Here's how we implement	`compose(..)` with recursion:
 
@@ -402,7 +402,7 @@ The disadvantage is they're listed in the reverse order that they execute, which
 
 The reverse ordering, composing from left-to-right, has a common name: `pipe(..)`. This name is said to come from Unix/Linux land, where multiple programs are strung together by "pipe"ing (`|` operator) the output of the first one in as the input of the second, and so on (i.e., `ls -la | grep "foo" | less`).
 
-`pipe(..)` is identical to `compose(..)` except it runs through the list in left-to-right order:
+`pipe(..)` is identical to `compose(..)` except it processes through the list of functions in left-to-right order:
 
 ```js
 function pipe(...fns) {
@@ -456,7 +456,9 @@ var filterWords = partial( pipe, words, unique );
 
 As you may recall from `partialRight(..)`'s definition in Chapter 3, it uses `reverseArgs(..)` under the covers, just as our `pipe(..)` now does. So we get the same result either way.
 
-The slight performance advantage to `pipe(..)` is that since we're not trying to preserve the right-to-left argument order of `compose(..)` by doing a right-partial application, using `pipe(..)` we don't need to reverse the argument order back, like we do inside `partialRight(..)`. So `partial(pipe, ..)` is a little better than `partialRight(compose, ..)`.
+The slight performance advantage to `pipe(..)` in this specific case is that since we're not trying to preserve the right-to-left argument order of `compose(..)` by doing a right-partial application, using `pipe(..)` we don't need to reverse the argument order back, like we do inside `partialRight(..)`. So `partial(pipe, ..)` is a little better here than `partialRight(compose, ..)`.
+
+In general, `pipe(..)` and `compose(..)` will not have any significant performance differences when using a well-established FP library.
 
 ## Abstraction
 
@@ -542,9 +544,13 @@ Moreover, **composition is helpful even if there's only one occurrence of someth
 
 Aside from generalization vs specialization, I think there's another more useful definition for abstraction, as revealed by this quote:
 
-> ... abstraction is a process by which the programmer associates a name with a potentially complicated program fragment, which can then be thought of in terms of its purpose of function, rather than in terms of how that function is achieved. By hiding irrelvant details, abstraction reduces conceptual complexity, making it possible for the programmer to focus on a manageable subset of the program text at any particular time.
+> ... abstraction is a process by which the programmer associates a name with a potentially complicated program fragment, which can then be thought of in terms of its purpose of function, rather than in terms of how that function is achieved. By hiding irrelevant details, abstraction reduces conceptual complexity, making it possible for the programmer to focus on a manageable subset of the program text at any particular time.
 >
-> http://web.cs.mun.ca/~ulf/pld/substance.html
+> Programming Language Pragmatics, Michael L Scott
+>
+> https://books.google.com/books?id=jM-cBAAAQBAJ&pg=PA115&lpg=PA115&dq=%22making+it+possible+for+the+programmer+to+focus+on+a+manageable+subset%22&source=bl&ots=yrJ3a-Tvi6&sig=XZwYoWwbQxP2w5qh2k2uMAPj47k&hl=en&sa=X&ved=0ahUKEwjKr-Ty35DSAhUJ4mMKHbPrAUUQ6AEIIzAA#v=onepage&q=%22making%20it%20possible%20for%20the%20programmer%20to%20focus%20on%20a%20manageable%20subset%22&f=false
+
+// TODO: make a proper reference to this book/quote, or at least find a better online link
 
 The point this quote makes is that abstraction -- generally, pulling out some piece of code into its own function -- serves the primary purpose of separating apart two pieces of functionality so that each piece can be focused on independent of the other.
 
@@ -668,7 +674,19 @@ var prop =
 		obj[name];
 ```
 
-To make an `extractName(..)` that pulls a `"name"` property off an object:
+While we're dealing with object properties, let's also define the opposite utility: `setProp(..)` for setting a property value onto an object.
+
+However, we want to be careful not to just mutate an existing object but rather create a clone of the object to make the change to, and then return it. The reasons for such care will be discussed in detail in Chapter 5.
+
+```js
+function setProp(name,obj,val) {
+	var o = Object.assign( {}, obj );
+	o[name] = val;
+	return o;
+}
+```
+
+Now, to define an `extractName(..)` that pulls a `"name"` property off an object, we'll partially apply `prop(..)`:
 
 ```
 var extractName = partial( prop, "name" );
@@ -676,7 +694,7 @@ var extractName = partial( prop, "name" );
 
 **Note:** Don't miss that `extractName(..)` here hasn't actually extracted anything yet. We partially applied `prop(..)` to make a function that's waiting to extract the `"name"` property from whatever object we pass into it. We could also have done it with `curry(prop)("name")`.
 
-Next, let's reduce our example's nested lookup calls to this:
+Next, let's narrow the focus on our example's nested lookup calls to this:
 
 ```js
 getLastOrder( function orderFound(order){
@@ -720,25 +738,25 @@ But we need to keep going and remove the `order` "point". The next step is to ob
 var extractPersonId = partial( prop, "personId" );
 ```
 
-To construct the `{ id: .. }` object that needs to be passed to `processPerson(..)`, let's make another utility for wrapping a value in an object at a specified property name -- this is kind of like the opposite of `prop(..)`. I'll call this utility `setProp(..)`:
+To construct the object (of the form `{ id: .. }`) that needs to be passed to `processPerson(..)`, let's make another utility for wrapping a value in an object at a specified property name, called `makeObjProp(..)`:
 
 ```js
-function setProp(name,value) {
-	return {
-		[name]: value
-	};
+function makeObjProp(name,value) {
+	return setProp( name, {}, value );
 }
 
 // or the ES6 => form
-var setProp =
+var makeObjProp =
 	(name,value) =>
-		({ [name]: value });
+		setProp( name, {}, value );
 ```
 
-Just as we did with `prop(..)` to make `extractName(..)`, we'll partially apply `setProp(..)` to build a function `personData(..)` that makes our data object:
+**Tip:** This utility is known as `objOf(..)` in the Ramda library.
+
+Just as we did with `prop(..)` to make `extractName(..)`, we'll partially apply `makeObjProp(..)` to build a function `personData(..)` that makes our data object:
 
 ```js
-var personData = partial( setProp, "id" );
+var personData = partial( makeObjProp, "id" );
 ```
 
 To use `processPerson(..)` to perform the lookup of a person attached to an `order` value, the conceptual flow of data through operations we need is:
@@ -762,7 +780,7 @@ var getLastOrder = partial( ajax, "http://some.api/order", { id: -1 } );
 var extractName = partial( prop, "name" );
 var outputPersonName = compose( output, extractName );
 var processPerson = partialRight( getPerson, outputPersonName );
-var personData = partial( setProp, "id" );
+var personData = partial( makeObjProp, "id" );
 var extractPersonId = partial( prop, "personId" );
 var lookupPerson = compose( processPerson, personData, extractPersonId );
 
@@ -783,7 +801,7 @@ partial( ajax, "http://some.api/order", { id: -1 } )
 			partial( ajax, "http://some.api/person" ),
 			compose( output, partial( prop, "name" ) )
 		),
-		partial( setProp, "id" ),
+		partial( makeObjProp, "id" ),
 		partial( prop, "personId" )
 	)
 );
@@ -799,4 +817,4 @@ Because JS functions can only return single values, the pattern essentially dict
 
 Instead of listing out each step as a discrete call in our code, function composition using a utility like `compose(..)` abstracts that implementation detail so the code is more readable, allowing us to focus on *what* the composition will be used to accomplish, not *how* it will be performed.
 
-Composition is one of the most important tools that underpins most of the rest of FP.
+Composition -- declarative data flow -- is one of the most important tools that underpins most of the rest of FP.

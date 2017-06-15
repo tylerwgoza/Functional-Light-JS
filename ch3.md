@@ -3,7 +3,7 @@
 
 In "Function Inputs" in Chapter 2, we talked about the basics of function parameters and arguments. We even looked at some syntactic tricks for easing their use such as the `...` operator and destructuring.
 
-I recommended in that first chapter that you try to design functions with a single parameter if at all possible. The fact is, this won't always be possible, and you won't always be in control of function signatures that you need to work with.
+I recommended in that discussion that you try to design functions with a single parameter if at all possible. The fact is, this won't always be possible, and you won't always be in control of function signatures that you need to work with.
 
 We now want to turn our attention to more sophisticated and powerful patterns for wrangling function inputs in these scenarios.
 
@@ -51,7 +51,7 @@ One way to articulate what's going on is that the `getOrder(data,cb)` function i
 
 To be a tiny bit more formal about this pattern, partial application is strictly a reduction in a function's arity; remember, that's the number of expected parameter inputs. We reduced the original `ajax(..)` function's arity from 3 to 2 for the `getOrder(..)` function.
 
-Let's invent a `partial(..)` utility:
+Let's define a `partial(..)` utility:
 
 ```js
 function partial(fn,...presetArgs) {
@@ -388,15 +388,17 @@ var curriedSum = curry( sum, 5 );
 curriedSum( 1 )( 2 )( 3 )( 4 )( 5 );		// 15
 ```
 
-The advantage of currying here is being able to do something like `curriedSum(1)(2)(3)`, which returns a function. Then later call that function (like `fn(4)`) to get yet another fn, and still later call *that* function (like `anotherfn(5)`), finally computing the `15` result.
+The advantage of currying here is that each call to pass in an argument produces another function that's more specialized, and we can capture and use *that* new function later in the program. Partial application specifies all the partially applied arguments up front, producing a function that's waiting for all the rest of the arguments.
+
+If you wanted to use partial application to specify one parameter at a time, you'd have to keep calling `partialApply(..)` on each successive function. Curried functions do this automatically, making working with individual arguments one-at-a-time more ergonomic.
 
 In JavaScript, both currying and partial application use closure to remember the arguments over time until all have been received, and then the original operation can be performed.
 
-### Why Currying Or Partial Application?
+### Why Currying And Partial Application?
 
 With either currying style (`sum(1)(2)(3)`) or partial application style (`partial(sum,1,2)(3)`), the call-site unquestionably looks stranger than a more common one like `sum(1,2,3)`. So **why would we go this direction** when adopting FP? There are multiple layers to answering that question.
 
-The first and most obvious reason is that both currying and partial application allow you to separate in time/space (throughout your code base) when and where separate arguments are specified, whereas traditional function calls require all the arguments to be present all at once. If you have a place in your code where you'll know some of the arguments and another place where the other arguments are determined, currying or partial application are very useful.
+The first and most obvious reason is that both currying and partial application allow you to separate in time/space (throughout your code base) when and where separate arguments are specified, whereas traditional function calls require all the arguments to be present up front. If you have a place in your code where you'll know some of the arguments and another place where the other arguments are determined, currying or partial application are very useful.
 
 Another layer to this answer, which applies most specifically to currying, is that composition of functions is much easier when there's only one argument. So a function that ultimately needs 3 arguments, if curried, becomes a function that needs just one, three times over. That kind of unary function will be a lot easier to work with when we start composing them. We'll tackle this topic later in the text.
 
@@ -414,7 +416,7 @@ foo 1 2 3
 
 This calls the `foo` function, and has the result of passing in three values `1`, `2`, and `3`. But functions are automatically curried in Haskell, which means each value goes in as a separate curried-call. The JS equivalent of that would look like `foo(1)(2)(3)`, which is the same style as the `curry(..)` I presented above.
 
-**Note:** In Haskell, `foo (1,2,3)` is not passing in those 3 values at once as three separate arguments, but a tuple (kinda like a JS array) as a single argument. To work, `foo` would need to be altered to handle a tuple in that argument position. As far as I can tell, there's no way in Haskell to pass all three arguments separately with just one function call; each argument gets its own curried-call. Of course, the presence of multiple calls is opaque to the Haskell developer, but it's a lot more syntactically obvious to the JS developer.
+**Note:** In Haskell, `foo (1,2,3)` is not passing in those 3 values at once as three separate arguments, but a tuple (kinda like a JS array) as a single argument. To work, `foo` would need to be altered to handle a tuple in that argument position. As far as I can tell, there's no way in Haskell to pass all three arguments separately with just one function call; each argument gets its own curried-call. Of course, the presence of multiple calls is transparent to the Haskell developer, but it's a lot more syntactically obvious to the JS developer.
 
 For these reasons, I think the earlier `curry(..)` that I demonstrated is a faithful adaptation, or what I might call "strict currying".
 
@@ -457,7 +459,7 @@ Now each curried-call accepts one or more arguments (as `nextArgs`). We'll leave
 
 It may also be the case that you have a curried function that you'd like to sort of un-curry -- basically, to turn a function like `f(1)(2)(3)` back into a function like `g(1,2,3)`.
 
-The standard utility for this is (un)shockingly called `uncurry(..)`:
+The standard utility for this is (un)shockingly typically called `uncurry(..)`. Here's a simple naive implementation:
 
 ```js
 function uncurry(fn) {
@@ -486,7 +488,7 @@ var uncurry =
 		};
 ```
 
-**Warning:** Don't just assume that `uncurry(curry(f))` has the same behavior as `f`. The uncurried function acts (mostly) the same as the original function if you pass as many arguments to it as the original function expected. However, if you pass fewer arguments, you still get back a partially curried function waiting for more arguments; this quirk is illustrated in the next snippet.
+**Warning:** Don't just assume that `uncurry(curry(f))` has the same behavior as `f`. In some libs the uncurrying would result in a function like the original, but not all of them; certainly our example here does not. The uncurried function acts (mostly) the same as the original function if you pass as many arguments to it as the original function expected. However, if you pass fewer arguments, you still get back a partially curried function waiting for more arguments; this quirk is illustrated in the next snippet.
 
 ```js
 function sum(...args) {
@@ -506,7 +508,7 @@ uncurriedSum( 1, 2, 3, 4, 5 );				// 15
 uncurriedSum( 1, 2, 3 )( 4 )( 5 );			// 15
 ```
 
-Probably the more common case of using `uncurry(..)` is not with a manually curried function as just shown, but with a curried function that comes out as a result of some other set of operations. We'll illustrate that scenario later in this chapter in the "No Points" discussion.
+Probably the more common case of using `uncurry(..)` is not with a manually curried function as just shown, but with a function that comes out curried as a result of some other set of operations. We'll illustrate that scenario later in this chapter in the "No Points" discussion.
 
 ## All For One
 
@@ -621,7 +623,7 @@ specialOutput( "Hello World" );		// HELLO WORLD
 simpleOutput( "Hello World" );		// Hello World
 ```
 
-You also may see `identity(..)` used as a default transformation function for `map(..)` calls or as the initial value in a `reduce(..)` of a list of functions; both of these utilities will be covered later in the text.
+You also may see `identity(..)` used as a default transformation function for `map(..)` calls or as the initial value in a `reduce(..)` of a list of functions; both of these utilities will be covered in Chapter 8.
 
 ### Unchanging One
 
@@ -644,14 +646,236 @@ var constant =
 With this tidy little utility, we can solve our `then(..)` annoyance:
 
 ```js
-p1.then( foo ).then( _=>p2 ).then( bar );
+p1.then( foo ).then( () => p2 ).then( bar );
 
 // vs
 
 p1.then( foo ).then( constant( p2 ) ).then( bar );
 ```
 
-**Warning:** Although the `_=>p2` arrow function version is shorter than `constant(p2)`, resist the temptation to use it. The function is returning a value from outside of itself, which is a bit worse from the FP perspective. We'll cover the pitfalls of such actions later in the text, Chapter 5 "Reducing Side Effects".
+**Warning:** Although the `() => p2` arrow function version is shorter than `constant(p2)`, I would encourage you to resist the temptation to use it. The arrow function is returning a value from outside of itself, which is a bit worse from the FP perspective. We'll cover the pitfalls of such actions later in the text, Chapter 5 "Reducing Side Effects".
+
+## Spread 'Em Out
+
+In Chapter 2, we briefly looked at parameter array destructuring. Recall this example:
+
+```js
+function foo( [x,y,...args] ) {
+	// ..
+}
+
+foo( [1,2,3] );
+```
+
+In the parameter list of `foo(..)`, we declare that we're expecting a single array argument that we want to break down -- or in effect, spread out -- into individually named parameters `x` and `y`. Any other values in the array beyond those first two positions are gathered into an `args` array with the `...` operator.
+
+This trick is handy if an array must be passed in but you want to treat its contents as individual parameters.
+
+However, sometimes you won't have the ability to change the declaration of the function to use parameter array destructuring. For example, imagine these functions:
+
+```js
+function foo(x,y) {
+	console.log( x + y );
+}
+
+function bar(fn) {
+	fn( [ 3, 9 ] );
+}
+
+bar( foo );			// fails
+```
+
+Do you spot why `bar(foo)` fails?
+
+The array `[3,9]` is sent in as a single value to `fn(..)`, but `foo(..)` expects `x` and `y` separately. If we could change the declaration of `foo(..)` to be `function foo([x,y]) { ..`, we'd be fine. Or, if we could change the behavior of `bar(..)` to make the call as `fn(...[3,9])`, the values `3` and `9` would be passed in individually.
+
+There will be occasions when you have two functions that are imcompatible in this way, and you won't be able to change their declarations/definitions for various external reasons. So, how do you use them together?
+
+We can define a helper to adapt a function so that it spreads out a single received array as its individual arguments:
+
+```js
+function spreadArgs(fn) {
+	return function spreadFn(argsArr) {
+		return fn( ...argsArr );
+	};
+}
+
+// or the ES6 => arrow form
+var spreadArgs =
+	fn =>
+		argsArr =>
+			fn( ...argsArr );
+```
+
+**Note:** I called this helper `spreadArgs(..)`, but in libraries like Ramda it's often called `apply(..)`.
+
+Now we can use `spreadArgs(..)` to adapt `foo(..)` to work as the proper input to `bar(..)`:
+
+```js
+bar( spreadArgs( foo ) );			// 12
+```
+
+It won't seem clear yet why these occassions will arise, but trust me, they do. Essentially, `spreadArgs(..)` will allow us to define functions that `return` multiple values via an array, but still have those multiple values treated independently as inputs to another function.
+
+When function output becomes input to another function, this is called composition; we'll cover this topic in detail in Chapter 4.
+
+While we're talking about a `spreadArgs(..)` utility, let's also define a utility to handle the opposite action:
+
+```js
+function gatherArgs(fn) {
+	return function gatheredFn(...argsArr) {
+		return fn( argsArr );
+	};
+}
+
+// or the ES6 => arrow form
+var gatherArgs =
+	fn =>
+		(...argsArr) =>
+			fn( argsArr );
+```
+
+**Note:** In Ramda, this utility is referred to as `unapply(..)`, being that it's the opposite of `apply(..)`. I think the "spread" / "gather" terminology is a little more descriptive for what's going on.
+
+We can use this utility to gather individual arguments into a single array, perhaps because we want to adapt a function with array parameter destructuring to another utility that passes arguments separately. We will cover `reduce(..)` in Chapter 8, but briefly: it repeatedly calls its reducer function with two individual parameters, which we can now *gather* together:
+
+```js
+function combineFirstTwo([ v1, v2 ]) {
+	return v1 + v2;
+}
+
+[1,2,3,4,5].reduce( gatherArgs( combineFirstTwo ) );
+// 15
+```
+
+## Order Matters
+
+One of the frustrating things about currying and partial application of functions with multiple parameters is all the juggling we have to do with our arguments to get them into the right order. Sometimes we define a function with parameters in the order that we would want to curry them, but other times that order is incompatible and we have to jump through hoops to reorder.
+
+The frustration is not merely that we need to use some utility to juggle the properties, but the fact that the usage of it clutters up our code a little bit with some extra noise. These kinds of things are like little paper cuts; one here or there isn't a showstopper, but the pain can certainly add up.
+
+Is there anything we can do to free ourselves from this argument ordering tyranny!?
+
+In Chapter 2, we looked at the named-argument destructuring pattern. Recall:
+
+```js
+function foo( {x,y} = {} ) {
+	console.log( x, y );
+}
+
+foo( {
+	y: 3
+} );					// undefined 3
+```
+
+We destructure the first parameter of the `foo(..)` function -- it's expected to be an object -- into individual parameters `x` and `y`. Then, at the call-site, we pass in that single object argument, and provide properties as desired, "named arguments" to map to parameters.
+
+The primary advantage of named arguments is not needing to juggle argument ordering, thereby improving readability. We can exploit this to improve currying/partial application if we invent alternate utilities that work with object properties:
+
+```js
+function partialProps(fn,presetArgsObj) {
+	return function partiallyApplied(laterArgsObj){
+		return fn( Object.assign( {}, presetArgsObj, laterArgsObj ) );
+	};
+}
+
+function curryProps(fn,arity = 1) {
+	return (function nextCurried(prevArgsObj){
+		return function curried(nextArgObj = {}){
+			var [key] = Object.keys( nextArgObj );
+			var allArgsObj = Object.assign( {}, prevArgsObj, { [key]: nextArgObj[key] } );
+
+			if (Object.keys( allArgsObj ).length >= arity) {
+				return fn( allArgsObj );
+			}
+			else {
+				return nextCurried( allArgsObj );
+			}
+		};
+	})( {} );
+}
+```
+
+We don't even need a `partialPropsRight(..)` because we don't need care about what order properties are being mapped; the name mappings make that ordering concern moot!
+
+Here's how we use those utilities:
+
+```js
+function foo({ x, y, z } = {}) {
+	console.log( `x:${x} y:${y} z:${z}` );
+}
+
+var f1 = curryProps( foo, 3 );
+var f2 = partialProps( foo, { y: 2 } );
+
+f1( {y: 2} )( {x: 1} )( {z: 3} );
+// x:1 y:2 z:3
+
+f2( { z: 3, x: 1 } );
+// x:1 y:2 z:3
+```
+
+Order doesn't matter anymore! We can now specify which arguments we want in whatever sequence makes sense. No more `reverseArgs(..)` or other nuisances. Cool!
+
+### Spreading Properties
+
+Unfortunately, this only works because we have control over the signature of `foo(..)` and defined it to destructure its first parameter. What if we wanted to use this technique with a function that had its parameters indivdually listed (no parameter destructuring!), and we couldn't change that function signature?
+
+```js
+function bar(x,y,z) {
+	console.log( `x:${x} y:${y} z:${z}` );
+}
+```
+
+Just like the `spreadArgs(..)` utility earlier, we could define a `spreadArgProps(..)` helper that takes the `key: value` pairs out of an object argument and "spreads" the values out as individual arguments.
+
+There are some quirks to be aware of, though. With `spreadArgs(..)`, we were dealing with arrays, where ordering is well defined and obvious. However, with objects, property order is less clear and not necessarily reliable. Depending on how an object is created and properties set, we cannot be absolutely certain what enumeration order properties would come out.
+
+Such a utility needs a way to let you define what order the function in question expects its arguments (e.g., property enumeration order). We can pass an array like `["x","y","z"]` to tell the utility to pull the properties off the object argument in exactly that order.
+
+That's decent, but it's also unfortunate that we kinda *have* to do add that property-name array even for the simplest of functions. Is there any kind of trick we could use to detect what order the parameters are listed for a function, in at least the common simple cases? Fortunately, yes!
+
+JavaScript functions have a `.toString()` method that gives a string representation of the function's code, including the function declaration signature. Dusting off our regular expression parsing skills, we can parse the string representation of the function, and pull out the individually named parameters. The code looks a bit gnarly, but it's good enough to get the job done:
+
+```js
+function spreadArgProps(
+	fn,
+	propOrder =
+		fn.toString()
+		.replace( /^(?:(?:function.*\(([^]*?)\))|(?:([^\(\)]+?)\s*=>)|(?:\(([^]*?)\)\s*=>))[^]+$/, "$1$2$3" )
+		.split( /\s*,\s*/ )
+		.map( v => v.replace( /[=\s].*$/, "" ) )
+) {
+	return function spreadFn(argsObj) {
+		return fn( ...propOrder.map( k => argsObj[k] ) );
+	};
+}
+```
+
+**Note:** This utility's parameter parsing logic is far from bullet-proof; we're using regular expressions to parse code, which is already a faulty premise! But our only goal here is to handle the common cases, which this does reasonably well. We only need a sensible default detection of parameter order for functions with simple parameters (as well as those with default parameter values). We don't, for example, need to be able to parse out a complex destructured parameter, because we wouldn't likely be using this utility with such a function, anyway. So, this logic gets the 80% job done; it lets us override the `propOrder` array for any other more complex function signature that wouldn't otherwise be correctly parsed. That's the kind of pragmatic balance this book seeks to find wherever possible.
+
+Let's illustrate using our `spreadArgProps(..)` utility:
+
+```js
+function bar(x,y,z) {
+	console.log( `x:${x} y:${y} z:${z}` );
+}
+
+var f3 = curryProps( spreadArgProps( bar ), 3 );
+var f4 = partialProps( spreadArgProps( bar ), { y: 2 } );
+
+f3( {y: 2} )( {x: 1} )( {z: 3} );
+// x:1 y:2 z:3
+
+f4( { z: 3, x: 1 } );
+// x:1 y:2 z:3
+```
+
+A word of caution: the object parameters/named arguments pattern I'm showing here clearly improves readability by reducing the clutter of argument order juggling, but to my knowledge, no mainstream FP libraries are using this approach. It comes at the expense of being far less familiar than how most JavaScript FP is done.
+
+Also, usage of functions defined in this style requires you to know what each argument's name is. You can't just remember, "oh, the function goes in as the first argument" anymore. Instead you have to remember, "the function parameter is called 'fn'."
+
+Weigh these tradeoffs carefully.
 
 ## No Points
 
@@ -712,7 +936,7 @@ function output(txt) {
 	console.log( txt );
 }
 
-function printIf( msg, predicate ) {
+function printIf( predicate, msg ) {
 	if (predicate( msg )) {
 		output( msg );
 	}
@@ -725,8 +949,8 @@ function isShortEnough(str) {
 var msg1 = "Hello";
 var msg2 = msg1 + " World";
 
-printIf( msg1, isShortEnough );			// Hello
-printIf( msg2, isShortEnough );
+printIf( isShortEnough, msg1 );			// Hello
+printIf( isShortEnough, msg2 );
 ```
 
 Now let's say you want to print a message only if it's long enough; in other words, if it's `!isShortEnough(..)`. Your first thought is probably this:
@@ -736,13 +960,13 @@ function isLongEnough(str) {
 	return !isShortEnough( str );
 }
 
-printIf( msg1, isLongEnough );
-printIf( msg2, isLongEnough );			// Hello World
+printIf( isLongEnough, msg1 );
+printIf( isLongEnough, msg2 );			// Hello World
 ```
 
 Easy enough... but "points" now! See how `str` is passed through? Without re-implementing the `str.length` check, can we refactor this code to point-free style?
 
-Let's define a `not(..)` negation operator:
+Let's define a `not(..)` negation helper (often referred to as `complement(..)` in FP libraries):
 
 ```js
 function not(predicate) {
@@ -763,7 +987,7 @@ Next, let's use `not(..)` to alternately define `isLongEnough(..)` without "poin
 ```js
 var isLongEnough = not( isShortEnough );
 
-printIf( msg2, isLongEnough );			// Hello World
+printIf( isLongEnough, msg2 );			// Hello World
 ```
 
 That's pretty good, isn't it? But we *could* keep going. The definition of the `printIf(..)` function can actually be refactored to be point-free itself.
@@ -789,14 +1013,12 @@ var when =
 Let's mix `when(..)` with a few other helper utilities we've seen earlier in this chapter, to make the point-free `printIf(..)`:
 
 ```js
-var printIf = reverseArgs(
-	uncurry( partialRight( when, output ) )
-);
+var printIf = uncurry( rightPartial( when, output ) );
 ```
 
-Here's how we did it: we right-partially applied the `output` method as the second (`action`) argument for `when(..)`, which leaves us with a function still expecting the first argument (`predicate`). *That* function when called produces another function expecting the message string; it would look like this: `fn(predicate)(str)`.
+Here's how we did it: we right-partially applied the `output` method as the second (`fn`) argument for `when(..)`, which leaves us with a function still expecting the first argument (`predicate`). *That* function when called produces another function expecting the message string; it would look like this: `fn(predicate)(str)`.
 
-A chain of multiple (two) function calls like that looks an awful lot like a curried function, so we `uncurry(..)` this result to produce a single function that expects the two `predicate` and `str` arguments together. Lastly, we reverse those arguments to get back to the original `printIf(str,predicate)` signature.
+A chain of multiple (two) function calls like that looks an awful lot like a curried function, so we `uncurry(..)` this result to produce a single function that expects the two `str` and `predicate` arguments together, which matches the original `printIf(predicate,str)` signature.
 
 Here's the whole example put back together (assuming various utilities we've already detailed in this chapter are present):
 
@@ -811,25 +1033,23 @@ function isShortEnough(str) {
 
 var isLongEnough = not( isShortEnough );
 
-var printIf = reverseArgs(
-	uncurry( partialRight( when, output ) )
-);
+var printIf = uncurry( partialRight( when, output ) );
 
 var msg1 = "Hello";
 var msg2 = msg1 + " World";
 
-printIf( msg1, isShortEnough );			// Hello
-printIf( msg2, isShortEnough );
+printIf( isShortEnough, msg1 );			// Hello
+printIf( isShortEnough, msg2 );
 
-printIf( msg1, isLongEnough );
-printIf( msg2, isLongEnough );			// Hello World
+printIf( isLongEnough, msg1 );
+printIf( isLongEnough, msg2 );			// Hello World
 ```
 
 Hopefully the FP practice of point-free style coding is starting to make a little more sense. It'll still take a lot of practice to train yourself to think this way naturally. **And you'll still have to make judgement calls** as to whether point-free coding is worth it, as well as what extent will benefit your code's readability.
 
 What do you think? Points or no points for you?
 
-**Note:** Still want more practice with point-free style coding? We'll revisit this technique in "Revisiting Points" in Chapter 4, based on new-found knowledge of function composition.
+**Note:** Want more practice with point-free style coding? We'll revisit this technique in "Revisiting Points" in Chapter 4, based on new-found knowledge of function composition.
 
 ## Summary
 

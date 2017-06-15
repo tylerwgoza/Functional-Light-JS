@@ -79,7 +79,7 @@ The correct answer is: not at all. If you're not sure whether `foo()`, `bar()`, 
 
 In other words, the final `console.log(x)` is impossible to analyze or predict unless you've mentally executed the whole program up to that point.
 
-Guess who's good at running your program? The JS engine. Guess who's not as good at running your program? The reader of your code. And yet, your choice to write code with (potentially) side effects in one or more of those function calls means that you've burdened the reader with having to mentally execute your program in its entirety up to a certain line, for them to understand to understand that line.
+Guess who's good at running your program? The JS engine. Guess who's not as good at running your program? The reader of your code. And yet, your choice to write code with (potentially) side effects in one or more of those function calls means that you've burdened the reader with having to mentally execute your program in its entirety up to a certain line, for them to understand that line.
 
 If `foo()`, `bar()`, and `baz()` were all free of side effects, they could not affect `x`, which means we do not need to execute them to mentally trace what happens with `x`. This is less mental tax, and makes the code more readable.
 
@@ -403,11 +403,11 @@ What about DOM updates?
 var hist = document.getElementById( "orderHistory" );
 
 // idempotent:
-hist.orderHistory.innerHTML = order.historyText;
+hist.innerHTML = order.historyText;
 
 // non-idempotent:
 var update = document.createTextNode( order.latestUpdate );
-hist.orderHistory.appendChild( update );
+hist.appendChild( update );
 ```
 
 The key difference illustrated here is that the idempotent update replaces the DOM element's content. The current state of the DOM element is irrelevant, because it's unconditionally overwritten. The non-idempotent operation adds content to the element; implicitly, the current state of the DOM element is part of computing the next state.
@@ -480,7 +480,7 @@ Another common way to articulate a function's purity is: **given the same input(
 
 If a function *can* produce a different output each time it's given the same inputs, it is impure. Even if such a function always `return`s the same value, if it produces an indirect output side effect, the program state is changed each time it's called; this is impure.
 
-Impure functions are undesirable because they make all of their calls harder to reason about. A pure function's call is perfectly predictable. When some reading the code sees multiple `circleArea(3)` calls, they won't have to spend any extra effort to figure out what its output will be *each time*.
+Impure functions are undesirable because they make all of their calls harder to reason about. A pure function's call is perfectly predictable. When someone reading the code sees multiple `circleArea(3)` calls, they won't have to spend any extra effort to figure out what its output will be *each time*.
 
 ### Purely Relative
 
@@ -607,7 +607,7 @@ function rememberNumbers(...nums) {
 
 So is `simpleList(..)` reliably pure yet!? **Nope.** :(
 
-We're only guarding against side effects we can control (mutating by reference). Any function we pass that has other side effects will have poluted the purity of `simpleList(..)`:
+We're only guarding against side effects we can control (mutating by reference). Any function we pass that has other side effects will have polluted the purity of `simpleList(..)`:
 
 ```js
 simpleList( function impureIO(nums){
@@ -617,7 +617,9 @@ simpleList( function impureIO(nums){
 
 In fact, there's no way to define `rememberNumbers(..)` to make a perfectly-pure `simpleList(..)` function.
 
-Purity is about confidence. But we have to admit that in many cases, **any confidence we feel is actually relative to the context** of our program and what we know about it. In practice (in JavaScript) the question of function purity is not about being absolutely pure or not, but about a range of confidence in its purity. The more pure, the better.
+Purity is about confidence. But we have to admit that in many cases, **any confidence we feel is actually relative to the context** of our program and what we know about it. In practice (in JavaScript) the question of function purity is not about being absolutely pure or not, but about a range of confidence in its purity.
+
+The more pure, the better. The more effort you put into making a function pure(r), the higher your confidence will be when you read code that uses it, and that will make that part of the code more readable.
 
 ## There Or Not
 
@@ -675,7 +677,7 @@ That result becomes kinda like a mental `const` declaration, which as you're rea
 
 Hopefully the importance of this characteristic of a pure function is obvious. We're trying to make our programs more readable. One way we can do that is give the reader less work, by providing assistance to skip over the unnecessary stuff so they can focus on the important stuff.
 
-The reader shouldn't need to keep re-computing some outcome that isn't going to change (and doesn't need to). If you make define a pure function with referential transparency, they won't have to.
+The reader shouldn't need to keep re-computing some outcome that isn't going to change (and doesn't need to). If you define a pure function with referential transparency, the reader won't have to.
 
 ### Not So Transparent?
 
@@ -1009,7 +1011,7 @@ safer_generate( { prefix: "foo" } );
 
 These strategies are in no way fool-proof; the safest protection against side causes/effects is to not do them. But if you're trying to improve the readability and confidence level of your program, reducing the side causes/effects wherever possible is a huge step forward.
 
-Essentially, we're not really eliminating side causes/effects, but rather containing and limiting them, so that more of our code is verifiable and reliable. If we later run into program bugs, we know it's most likely that the parts of our code still using side causes/effects hold the culprits.
+Essentially, we're not really eliminating side causes/effects, but rather containing and limiting them, so that more of our code is verifiable and reliable. If we later run into program bugs, we know that the parts of our code still using side causes/effects are the most likely culprits.
 
 ## Summary
 
